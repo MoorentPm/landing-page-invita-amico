@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function ContactSection() {
     const [formData, setFormData] = useState({
@@ -12,26 +11,8 @@ export default function ContactSection() {
         propertyDescription: '',
         consent: false
     });
-    const [isSubmitted, setIsSubmitted] = useState(false);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setIsSubmitted(true);
-        
-        // Reset form after 3 seconds
-        setTimeout(() => {
-            setIsSubmitted(false);
-            setFormData({
-                referrerName: '',
-                referrerEmail: '',
-                ownerName: '',
-                ownerPhone: '',
-                ownerEmail: '',
-                propertyDescription: '',
-                consent: false
-            });
-        }, 3000);
-    };
+    // Stato migliorato per gestire invio, successo ed errore
+    const [status, setStatus] = useState('idle'); // 'idle', 'sending', 'success', 'error'
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -41,7 +22,45 @@ export default function ContactSection() {
         }));
     };
 
-    if (isSubmitted) {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setStatus('sending');
+
+        // === INCOLLA QUI IL TUO URL DI APPS SCRIPT! ===
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwMuNTeOdh22_GXGeC4A6tcTvnrRqpQg0UcKudocsgsYUP9IQOcgK-W3kfaUai3NXYz/exec';
+        
+        const formBody = new FormData();
+        for (const key in formData) {
+            formBody.append(key, formData[key]);
+        }
+
+        try {
+            const response = await fetch(scriptURL, { method: 'POST', body: formBody });
+            const result = await response.json();
+
+            if (result.result === 'success') {
+                setStatus('success');
+                // Resetta il modulo e lo stato dopo 3 secondi
+                setTimeout(() => {
+                    setFormData({
+                        referrerName: '', referrerEmail: '', ownerName: '', ownerPhone: '',
+                        ownerEmail: '', propertyDescription: '', consent: false
+                    });
+                    setStatus('idle');
+                }, 3000);
+            } else {
+                throw new Error(result.error || 'Errore sconosciuto da Google Script');
+            }
+        } catch (error) {
+            console.error('Error!', error.message);
+            setStatus('error');
+             // Permette all'utente di riprovare dopo 3 secondi
+            setTimeout(() => setStatus('idle'), 3000);
+        }
+    };
+
+    // La tua bellissima schermata di successo!
+    if (status === 'success') {
         return (
             <section id="contact" className="fade-in">
                 <div className="text-center">
@@ -59,6 +78,7 @@ export default function ContactSection() {
         );
     }
 
+    // Il tuo modulo originale, con un bottone dinamico
     return (
         <section id="contact" className="fade-in">
             <div className="text-center mb-16">
@@ -71,113 +91,53 @@ export default function ContactSection() {
                 <div className="glass-card rounded-3xl p-8">
                     <h3 className="text-2xl font-light text-white mb-8 text-center">Modulo Referral</h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         {/* ... tutti i tuoi campi input restano identici ... */}
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Il tuo nome</label>
-                                <input
-                                    type="text"
-                                    name="referrerName"
-                                    value={formData.referrerName}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all"
-                                    placeholder="Nome e cognome"
-                                    required
-                                />
+                                <input type="text" name="referrerName" value={formData.referrerName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="Nome e cognome" required />
                             </div>
                             <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">La tua email</label>
-                                <input
-                                    type="email"
-                                    name="referrerEmail"
-                                    value={formData.referrerEmail}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all"
-                                    placeholder="tua@email.com"
-                                    required
-                                />
+                                <input type="email" name="referrerEmail" value={formData.referrerEmail} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="tua@email.com" required />
                             </div>
                         </div>
-
                         <hr className="border-white border-opacity-20" />
-
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
+                           <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Nome proprietario</label>
-                                <input
-                                    type="text"
-                                    name="ownerName"
-                                    value={formData.ownerName}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all"
-                                    placeholder="Nome proprietario"
-                                    required
-                                />
+                                <input type="text" name="ownerName" value={formData.ownerName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="Nome proprietario" required />
                             </div>
                             <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Telefono</label>
-                                <input
-                                    type="tel"
-                                    name="ownerPhone"
-                                    value={formData.ownerPhone}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all"
-                                    placeholder="+39 xxx xxx xxxx"
-                                    required
-                                />
+                                <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="+39 xxx xxx xxxx" required />
                             </div>
                             <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Email proprietario</label>
-                                <input
-                                    type="email"
-                                    name="ownerEmail"
-                                    value={formData.ownerEmail}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all"
-                                    placeholder="proprietario@email.com"
-                                    required
-                                />
+                                <input type="email" name="ownerEmail" value={formData.ownerEmail} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="proprietario@email.com" required />
                             </div>
                         </div>
-
                         <div>
                             <label className="block text-white text-opacity-80 font-light mb-2">Descrizione immobile</label>
-                            <textarea
-                                name="propertyDescription"
-                                value={formData.propertyDescription}
-                                onChange={handleInputChange}
-                                rows={4}
-                                className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all resize-none"
-                                placeholder="Descrivi brevemente l'immobile: zona, tipologia, stato attuale, caratteristiche principali..."
-                                required
-                            />
+                            <textarea name="propertyDescription" value={formData.propertyDescription} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all resize-none" placeholder="Descrivi brevemente l'immobile: zona, tipologia, stato attuale, caratteristiche principali..." required />
                         </div>
-
                         <div className="flex items-start gap-3">
-                            <input
-                                type="checkbox"
-                                name="consent"
-                                checked={formData.consent}
-                                onChange={handleInputChange}
-                                className="mt-1"
-                                required
-                            />
+                            <input type="checkbox" name="consent" checked={formData.consent} onChange={handleInputChange} className="mt-1" required />
                             <label className="text-white text-opacity-80 font-light text-sm">
                                 Confermo di avere il consenso esplicito del proprietario a condividere i suoi dati con Moorent PM per essere contattato.
                             </label>
                         </div>
-
-                        <button
-                            type="submit"
-                            className="w-full px-8 py-4 bg-[#F5E5E5] hover:bg-[#E0D0D0] text-black font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3"
-                        >
-                            <Send className="w-5 h-5" />
-                            Invia Referral
+                        {/* Bottone dinamico */}
+                        <button type="submit" disabled={status === 'sending'} className="w-full px-8 py-4 bg-[#F5E5E5] hover:bg-[#E0D0D0] text-black font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {status === 'sending' && <><Loader2 className="w-5 h-5 animate-spin" /> Invio in corso...</>}
+                            {status === 'error' && <><AlertTriangle className="w-5 h-5" /> Errore, riprova</>}
+                            {status === 'idle' && <><Send className="w-5 h-5" /> Invia Referral</>}
                         </button>
                     </form>
                 </div>
 
-                {/* Contact Information */}
-                <div className="space-y-8">
+                 {/* ... la tua sezione Contatti Diretti resta identica ... */}
+                 <div className="space-y-8">
                     <div className="glass-card rounded-3xl p-8 text-center">
                         <h3 className="text-2xl font-light text-white mb-8">Contatti Diretti</h3>
                         <div className="space-y-6">
@@ -195,19 +155,13 @@ export default function ContactSection() {
                             </div>
                         </div>
                     </div>
-
                     <div className="glass-card rounded-2xl p-8 border-l-4 border-blue-400">
                         <h4 className="text-lg font-medium text-white mb-4">Hai Domande?</h4>
                         <p className="text-white text-opacity-80 font-light leading-relaxed mb-6">
                             Il nostro team è disponibile per chiarire qualsiasi dubbio sul programma referral 
                             e per fornire maggiori informazioni sui nostri servizi di gestione immobiliare premium.
                         </p>
-                        <a 
-                            href="https://wa.me/393534830386"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-all duration-300 hover:scale-105"
-                        >
+                        <a href="https://wa.me/393534830386" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-all duration-300 hover:scale-105">
                             Contatta il Team
                         </a>
                     </div>
@@ -216,3 +170,4 @@ export default function ContactSection() {
         </section>
     );
 }
+
