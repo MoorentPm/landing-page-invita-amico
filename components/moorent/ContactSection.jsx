@@ -11,7 +11,6 @@ export default function ContactSection() {
         propertyDescription: '',
         consent: false
     });
-    // Stato migliorato per gestire invio, successo ed errore
     const [status, setStatus] = useState('idle'); // 'idle', 'sending', 'success', 'error'
 
     const handleInputChange = (e) => {
@@ -26,40 +25,43 @@ export default function ContactSection() {
         e.preventDefault();
         setStatus('sending');
 
-        // === INCOLLA QUI IL TUO URL DI APPS SCRIPT! ===
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwMuNTeOdh22_GXGeC4A6tcTvnrRqpQg0UcKudocsgsYUP9IQOcgK-W3kfaUai3NXYz/exec';
+        // ===================================================================
+        // === INCOLLA QUI IL TUO URL DELL'APP WEB DI GOOGLE SCRIPT! ===
+        // ===================================================================
+        const scriptURL = 'INCOLLA_IL_TUO_URL_QUI';
         
-        const formBody = new FormData();
-        for (const key in formData) {
-            formBody.append(key, formData[key]);
-        }
+        // --- QUESTA È LA MODIFICA CHIAVE ---
+        // Costruiamo una stringa di query dall'oggetto formData
+        const queryParams = new URLSearchParams(formData).toString();
+        // Aggiungiamo i parametri all'URL e un trucco per evitare la cache
+        const urlWithParams = `${scriptURL}?${queryParams}&cachebust=${new Date().getTime()}`;
 
         try {
-            const response = await fetch(scriptURL, { method: 'POST', body: formBody });
-            const result = await response.json();
-
-            if (result.result === 'success') {
-                setStatus('success');
-                // Resetta il modulo e lo stato dopo 3 secondi
-                setTimeout(() => {
-                    setFormData({
-                        referrerName: '', referrerEmail: '', ownerName: '', ownerPhone: '',
-                        ownerEmail: '', propertyDescription: '', consent: false
-                    });
-                    setStatus('idle');
-                }, 3000);
+            // Usiamo una richiesta GET che è più semplice e aggira il problema del reindirizzamento
+            const response = await fetch(urlWithParams, {
+                method: 'GET', // Cambiato da POST a GET per questo metodo
+                redirect: 'follow',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                }
+            });
+            
+            // Il contenuto della risposta da Google Apps Script dopo un reindirizzamento
+            // non è JSON valido, quindi ci basta controllare che la richiesta sia andata a buon fine.
+            if (response.ok) {
+                 setStatus('success');
             } else {
-                throw new Error(result.error || 'Errore sconosciuto da Google Script');
+                throw new Error(`Network response was not ok, status: ${response.status}`);
             }
         } catch (error) {
             console.error('Error!', error.message);
             setStatus('error');
-             // Permette all'utente di riprovare dopo 3 secondi
-            setTimeout(() => setStatus('idle'), 3000);
+            setTimeout(() => setStatus('idle'), 4000);
         }
     };
+    
+    // Il resto del tuo componente rimane esattamente lo stesso...
 
-    // La tua bellissima schermata di successo!
     if (status === 'success') {
         return (
             <section id="contact" className="fade-in">
@@ -78,7 +80,6 @@ export default function ContactSection() {
         );
     }
 
-    // Il tuo modulo originale, con un bottone dinamico
     return (
         <section id="contact" className="fade-in">
             <div className="text-center mb-16">
@@ -91,8 +92,7 @@ export default function ContactSection() {
                 <div className="glass-card rounded-3xl p-8">
                     <h3 className="text-2xl font-light text-white mb-8 text-center">Modulo Referral</h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                         {/* ... tutti i tuoi campi input restano identici ... */}
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Il tuo nome</label>
                                 <input type="text" name="referrerName" value={formData.referrerName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="Nome e cognome" required />
@@ -104,7 +104,7 @@ export default function ContactSection() {
                         </div>
                         <hr className="border-white border-opacity-20" />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                           <div>
+                            <div>
                                 <label className="block text-white text-opacity-80 font-light mb-2">Nome proprietario</label>
                                 <input type="text" name="ownerName" value={formData.ownerName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all" placeholder="Nome proprietario" required />
                             </div>
@@ -127,8 +127,11 @@ export default function ContactSection() {
                                 Confermo di avere il consenso esplicito del proprietario a condividere i suoi dati con Moorent PM per essere contattato.
                             </label>
                         </div>
-                        {/* Bottone dinamico */}
-                        <button type="submit" disabled={status === 'sending'} className="w-full px-8 py-4 bg-[#F5E5E5] hover:bg-[#E0D0D0] text-black font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button
+                            type="submit"
+                            disabled={status === 'sending'}
+                            className="w-full px-8 py-4 bg-[#F5E5E5] hover:bg-[#E0D0D0] text-black font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                             {status === 'sending' && <><Loader2 className="w-5 h-5 animate-spin" /> Invio in corso...</>}
                             {status === 'error' && <><AlertTriangle className="w-5 h-5" /> Errore, riprova</>}
                             {status === 'idle' && <><Send className="w-5 h-5" /> Invia Referral</>}
@@ -136,8 +139,7 @@ export default function ContactSection() {
                     </form>
                 </div>
 
-                 {/* ... la tua sezione Contatti Diretti resta identica ... */}
-                 <div className="space-y-8">
+                <div className="space-y-8">
                     <div className="glass-card rounded-3xl p-8 text-center">
                         <h3 className="text-2xl font-light text-white mb-8">Contatti Diretti</h3>
                         <div className="space-y-6">
@@ -161,7 +163,12 @@ export default function ContactSection() {
                             Il nostro team è disponibile per chiarire qualsiasi dubbio sul programma referral 
                             e per fornire maggiori informazioni sui nostri servizi di gestione immobiliare premium.
                         </p>
-                        <a href="https://wa.me/393534830386" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-all duration-300 hover:scale-105">
+                        <a 
+                            href="https://wa.me/393534830386"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-all duration-300 hover:scale-105"
+                        >
                             Contatta il Team
                         </a>
                     </div>
