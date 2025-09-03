@@ -30,37 +30,32 @@ export default function ContactSection() {
         // ===================================================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwMuNTeOdh22_GXGeC4A6tcTvnrRqpQg0UcKudocsgsYUP9IQOcgK-W3kfaUai3NXYz/exec';
         
-        // --- QUESTA È LA MODIFICA CHIAVE ---
-        // Costruiamo una stringa di query dall'oggetto formData
-        const queryParams = new URLSearchParams(formData).toString();
-        // Aggiungiamo i parametri all'URL e un trucco per evitare la cache
-        const urlWithParams = `${scriptURL}?${queryParams}&cachebust=${new Date().getTime()}`;
-
         try {
-            // Usiamo una richiesta GET che è più semplice e aggira il problema del reindirizzamento
-            const response = await fetch(urlWithParams, {
-                method: 'GET', // Cambiato da POST a GET per questo metodo
-                redirect: 'follow',
+            // --- QUESTA È LA MODIFICA CHIAVE ---
+            // Usiamo il metodo POST, ma con la modalità 'no-cors'.
+            // Questo invia i dati ma non attende una risposta leggibile,
+            // aggirando il problema del reindirizzamento e del CORS.
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors', // Invia la richiesta e non preoccuparti della risposta
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                }
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(new FormData(e.target)).toString(),
             });
-            
-            // Il contenuto della risposta da Google Apps Script dopo un reindirizzamento
-            // non è JSON valido, quindi ci basta controllare che la richiesta sia andata a buon fine.
-            if (response.ok) {
-                 setStatus('success');
-            } else {
-                throw new Error(`Network response was not ok, status: ${response.status}`);
-            }
+
+            // Dato che non possiamo leggere la risposta, assumiamo che sia andata a buon fine.
+            setStatus('success');
+
         } catch (error) {
+            // Questo blocco ora gestirà solo veri errori di rete (es. sei offline).
             console.error('Error!', error.message);
             setStatus('error');
             setTimeout(() => setStatus('idle'), 4000);
         }
     };
     
-    // Il resto del tuo componente rimane esattamente lo stesso...
+    // --- Il resto del tuo componente rimane invariato ---
 
     if (status === 'success') {
         return (
@@ -122,8 +117,8 @@ export default function ContactSection() {
                             <textarea name="propertyDescription" value={formData.propertyDescription} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-40 transition-all resize-none" placeholder="Descrivi brevemente l'immobile: zona, tipologia, stato attuale, caratteristiche principali..." required />
                         </div>
                         <div className="flex items-start gap-3">
-                            <input type="checkbox" name="consent" checked={formData.consent} onChange={handleInputChange} className="mt-1" required />
-                            <label className="text-white text-opacity-80 font-light text-sm">
+                            <input type="checkbox" name="consent" checked={formData.consent} onChange={handleInputChange} className="mt-1" required id="consent-checkbox" />
+                            <label htmlFor="consent-checkbox" className="text-white text-opacity-80 font-light text-sm">
                                 Confermo di avere il consenso esplicito del proprietario a condividere i suoi dati con Moorent PM per essere contattato.
                             </label>
                         </div>
