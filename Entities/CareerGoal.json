@@ -1,0 +1,39 @@
+{
+  "name": "CareerGoal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Goal title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Goal description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "role",
+        "environment",
+        "industry",
+        "skill_current",
+        "skill_developing"
+      ],
+      "description": "Goal category"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium",
+      "description": "Priority level"
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}
