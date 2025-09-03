@@ -28,7 +28,7 @@ export default function ContactSection() {
         // ===================================================================
         // === INCOLLA QUI IL TUO URL DELL'APP WEB DI GOOGLE SCRIPT! ===
         // ===================================================================
-        const scriptURL = 'INCOLLA_IL_TUO_URL_QUI';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwMuNTeOdh22_GXGeC4A6tcTvnrRqpQg0UcKudocsgsYUP9IQOcgK-W3kfaUai3NXYz/exec';
         
         // --- QUESTA È LA MODIFICA CHIAVE ---
         // Costruiamo una stringa di query dall'oggetto formData
