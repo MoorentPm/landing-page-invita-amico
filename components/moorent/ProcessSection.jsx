@@ -78,10 +78,10 @@ export default function ProcessSection() {
         {
             step: 4,
             title: "Premio Garantito",
-            description: "€500 di premio tramite bonifico entro 30 giorni dalla firma del contratto.",
+            description: "€370 di premio tramite bonifico entro 30 giorni dalla firma del contratto.",
             icon: Banknote,
             details: [
-                "€500 per ogni contratto firmato",
+                "€370 per ogni contratto firmato",
                 "Bonifico bancario entro 30 giorni",
                 "Pagamento dopo attivazione servizio",
                 "Nessun limite al numero di referral"

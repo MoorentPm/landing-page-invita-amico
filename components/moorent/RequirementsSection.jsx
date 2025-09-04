@@ -34,7 +34,7 @@ export default function RequirementsSection() {
         },
         {
             title: "Tempistiche Pagamento",
-            description: "Il premio di €500 viene trasferito tramite bonifico bancario entro 30 giorni dall'attivazione.",
+            description: "Il premio di €370 viene trasferito tramite bonifico bancario entro 30 giorni dall'attivazione.",
             icon: Clock,
             type: 'requirement'
         }
@@ -43,7 +43,7 @@ export default function RequirementsSection() {
     const conditions = [
         {
             title: "Nessun Limite",
-            description: "Non c'è limite al numero di contatti che puoi presentare. Ogni contratto firmato vale €500.",
+            description: "Non c'è limite al numero di contatti che puoi presentare. Ogni contratto firmato vale €370.",
             icon: Infinity,
             type: 'condition'
         },

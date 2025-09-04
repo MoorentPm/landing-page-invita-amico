@@ -22,7 +22,7 @@ export default function HeroSection() {
                     <h1 className={`text-5xl md:text-8xl font-extralight text-white tracking-tight mb-6 transition-all duration-500 ${showTitle ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                         Programma<br/>
                         <span className="bg-gradient-to-r from-[#F5E5E5] to-[#E0D0D0] bg-clip-text text-transparent font-light">
-                            "Invita un Amico"
+                            "Consiglia & Guadagna"
                         </span>
                     </h1>
                     
@@ -42,7 +42,7 @@ export default function HeroSection() {
                             Per questo abbiamo creato un programma esclusivo che premia chi ci aiuta a crescere con proprietari di qualità.
                         </p>
                         <div className="flex items-center justify-center gap-4" style={{ color: '#F5E5E5' }}>
-                            <span className="text-4xl font-bold">€500</span>
+                            <span className="text-4xl font-bold">€370</span>
                             <ArrowRight className="w-6 h-6" />
                             <span className="text-white text-opacity-80 font-light">Per ogni nuovo contratto</span>
                         </div>
